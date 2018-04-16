@@ -4,14 +4,14 @@ import {
 } from './flux';
 
 const controlPanelDispatcher = new Dispatcher();
-export const getNominee = `GET_NOMINEE`;
+// export const getNominee = `GET_NOMINEE`;
 
-const getNomineeAction = (nominee) => {
-    return {
-        'type': GET_NOMINEE,
-        "value": nominee,
-    }
-}
+// const getNomineeAction = (nominee) => {
+//     return {
+//         'type': VIEW_NOMINEE,
+//         "value": nominee,
+//     }
+// }
 $(function () {
 
     $("#countTable").dataTable({
@@ -28,46 +28,54 @@ $(function () {
     $('.next').text('').append('<i class="fa fa-angle-right" aria-hidden="true"></i>');
     $('.last').text('').append('<i class="fa fa-angle-double-right" aria-hidden="true"></i>');
 
+    class getNomineeStore extends Store {
+
+        getInitialState(cb) {
+            $.ajax({
+                url: "http://localhost:3000/nomineeList",
+                method: 'get',
+                contentType: 'application/json',
+                success: (res) => {
+                    this.__state = res;
+                    cb(this.__state);
+                }
+            });
+        }
+
+        // __onDispatch(action) {
+        //     switch (action.type) {
+        //         case VIEW_NOMINEE:
+        //             this.__state = action.value;
+
+        //     }
+        // }
 
 
-
-})
-
-
-
-class getNomineeCandidate {
-
-    nomineeDetails() {
+    }
+    const render = (state) => {
         const template = $('.nominee-details');
         $('.nominee-details').remove();
-       
-        $.ajax({
-
-            url: "http://localhost:3000/nomineeList/",
-            method: 'get',
-            contentType: "application/json",
-            success:  (res) =>  {
-                res.forEach((nominee) => {
-                    // let serialNo =0;
-                    let nomineeRow = template.clone();
-                    //    nomineeRow.find('.serial-no').html()
-                    nomineeRow.find('.nominee-name').html(`${nominee.name}`);
-                    nomineeRow.find('.nominated-by').html(nominee.nominatedBy);
-                    nomineeRow.find('.assessment-status').html(nominee.status);
-                    console.log(nomineeRow.children().eq(1).html());
-                    nomineeRow.appendTo('.nominee-table');
-                    $('.odd').hide();
-                });
-
-            }
+        let i = 1;
+        state.forEach((nominee) => {
+            let nomineeRow = template.clone();
+            nomineeRow.find('.serial-no').html(`${i++}`);
+            nomineeRow.find('.nominee-name').html(`${nominee.name}`);
+            nomineeRow.find('.nominated-by').html(nominee.nominatedBy);
+            nomineeRow.find('.assessment-status').html(nominee.status);
+            nomineeRow.appendTo('.nominee-table');
+            $('.odd').hide();
         });
-        
     };
-
-}
-
-let nominee = new getNomineeCandidate();
-nominee.nomineeDetails();
+    const nomineeStore = new getNomineeStore(controlPanelDispatcher);
+    nomineeStore.addListener((state) => {
+        console.log('render');
+        render(state);
+    });
+    nomineeStore.getInitialState((nominee) => {
+        render(nominee);
+    });
+    // nomineeStore.nomineeDetails();
+})
 // export const UPDATE_USERNAME = `UPDATE_USERNAME`;
 // export const UPDATE_FONT_SIZE_PREFERENCE = `UPDATE_FONT_SIZE_PREFERENCE`;
 
@@ -133,5 +141,3 @@ nominee.nomineeDetails();
 //     document.getElementsByClassName("container")[0].style.fontSize = fontSize === "small" ? "16px" : "24px";
 //     document.forms.fontSizeForm.fontSize.value = fontSize;
 // }
-
-// render(userPrefsStore.getUserPreferences());

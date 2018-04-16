@@ -73,16 +73,14 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 const controlPanelDispatcher = new __WEBPACK_IMPORTED_MODULE_0__flux__["a" /* Dispatcher */]();
-const getNominee = `GET_NOMINEE`;
-/* harmony export (immutable) */ __webpack_exports__["getNominee"] = getNominee;
+// export const getNominee = `GET_NOMINEE`;
 
-
-const getNomineeAction = nominee => {
-    return {
-        'type': GET_NOMINEE,
-        "value": nominee
-    };
-};
+// const getNomineeAction = (nominee) => {
+//     return {
+//         'type': VIEW_NOMINEE,
+//         "value": nominee,
+//     }
+// }
 $(function () {
 
     $("#countTable").dataTable({
@@ -98,39 +96,55 @@ $(function () {
     $('.previous').text('').append('<i class="fa fa-angle-left" aria-hidden="true"></i>');
     $('.next').text('').append('<i class="fa fa-angle-right" aria-hidden="true"></i>');
     $('.last').text('').append('<i class="fa fa-angle-double-right" aria-hidden="true"></i>');
-});
 
-class getNomineeCandidate {
+    class getNomineeStore extends __WEBPACK_IMPORTED_MODULE_0__flux__["b" /* Store */] {
 
-    nomineeDetails() {
+        getInitialState(cb) {
+            $.ajax({
+                url: "http://localhost:3000/nomineeList",
+                method: 'get',
+                contentType: 'application/json',
+                success: res => {
+                    this.__state = res;
+                    cb();
+                }
+            });
+        }
+
+        // __onDispatch(action) {
+        //     switch (action.type) {
+        //         case VIEW_NOMINEE:
+        //             this.__state = action.value;
+
+        //     }
+        // }
+
+
+    }
+    const render = state => {
         const template = $('.nominee-details');
         $('.nominee-details').remove();
-
-        $.ajax({
-
-            url: "http://localhost:3000/nomineeList/",
-            method: 'get',
-            contentType: "application/json",
-            success: res => {
-                res.forEach(nominee => {
-                    // let serialNo =0;
-                    let nomineeRow = template.clone();
-                    // console.log(template);
-                    //    nomineeRow.find('.serial-no').html()
-                    nomineeRow.find('.nominee-name').html(`${nominee.name}`);
-                    nomineeRow.find('.nominated-by').html(nominee.nominatedBy);
-                    nomineeRow.find('.assessment-status').html(nominee.status);
-                    console.log(nomineeRow.children().eq(1).html());
-                    nomineeRow.appendTo('.nominee-table');
-                    $('.odd').hide();
-                });
-            }
+        let i = 1;
+        state.forEach(nominee => {
+            let nomineeRow = template.clone();
+            nomineeRow.find('.serial-no').html(`${i++}`);
+            nomineeRow.find('.nominee-name').html(`${nominee.name}`);
+            nomineeRow.find('.nominated-by').html(nominee.nominatedBy);
+            nomineeRow.find('.assessment-status').html(nominee.status);
+            nomineeRow.appendTo('.nominee-table');
+            $('.odd').hide();
         });
-    }
-}
-
-let nominee = new getNomineeCandidate();
-nominee.nomineeDetails();
+    };
+    const nomineeStore = new getNomineeStore(controlPanelDispatcher);
+    nomineeStore.addListener(state => {
+        console.log('render');
+        render(state);
+    });
+    nomineeStore.getInitialState(nominee => {
+        render(nominee);
+    });
+    // nomineeStore.nomineeDetails();
+});
 // export const UPDATE_USERNAME = `UPDATE_USERNAME`;
 // export const UPDATE_FONT_SIZE_PREFERENCE = `UPDATE_FONT_SIZE_PREFERENCE`;
 
@@ -197,8 +211,6 @@ nominee.nomineeDetails();
 //     document.forms.fontSizeForm.fontSize.value = fontSize;
 // }
 
-// render(userPrefsStore.getUserPreferences());
-
 /***/ }),
 /* 1 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -207,7 +219,7 @@ nominee.nomineeDetails();
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Dispatcher__ = __webpack_require__(2);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_0__Dispatcher__["a"]; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Store__ = __webpack_require__(3);
-/* unused harmony reexport Store */
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_1__Store__["a"]; });
 
 
 
@@ -255,7 +267,7 @@ class Store {
     }
 
 }
-/* unused harmony export Store */
+/* harmony export (immutable) */ __webpack_exports__["a"] = Store;
 
 
 /***/ })
